@@ -49,13 +49,10 @@
       desktopItem = pkgs.makeDesktopItem {
         name = "brave-origin-nightly";
         desktopName = "Brave Origin Nightly";
-        exec = "${pkgs.lib.placeholder "out"}/bin/brave-origin %U";
-        icon = "${pkgs.lib.placeholder "out"}/share/icons/hicolor/256x256/apps/brave-origin-nightly.png";
+        exec = "brave-origin %U";  # just the binary name, no path
+        icon = "brave-origin-nightly";  # just the icon name, no path
         type = "Application";
-        categories = [
-          "Network"
-          "WebBrowser"
-        ];
+        categories = [ "Network" "WebBrowser" ];
         mimeTypes = [
           "text/html"
           "text/xml"
