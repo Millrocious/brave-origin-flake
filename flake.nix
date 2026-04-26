@@ -50,6 +50,7 @@
     in
     {
       packages.${system}.default = pkgs.stdenv.mkDerivation {
+        inherit pname version;
         src = pkgs.fetchzip {
           url = "https://github.com/brave/brave-browser/releases/download/${version}/${pname}-${version}-linux-amd64.zip";
           sha256 = "sha256-HPBPzl/MBKviOSHhJ8f43XV6fXo9bPg/nI3Ut5ZKsas=";
