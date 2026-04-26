@@ -73,7 +73,7 @@
         ];
 
         installPhase = ''
-          mkdir -p $out/bin $out/share/applications $out/share/icons/hicolor/256x256/apps
+          mkdir -p $out/bin $out/opt/brave-origin $out/share/applications $out/share/icons/hicolor/256x256/apps
 
           cp -r * $out/opt/brave-origin/
           cp product_logo_256.png $out/share/icons/hicolor/256x256/apps/brave-origin-nightly.png
