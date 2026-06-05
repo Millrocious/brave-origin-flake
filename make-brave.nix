@@ -231,6 +231,7 @@ stdenv.mkDerivation {
 
       ln -sf $BINARYWRAPPER $out/bin/${pname}
       ln -sf $BINARYWRAPPER $out/bin/brave-origin
+      ln -sf $BINARYWRAPPER $out/bin/brave
 
       for exe in $out/opt/brave.com/${packagePath}/{brave,chrome_crashpad_handler}; do
           patchelf \
@@ -240,7 +241,7 @@ stdenv.mkDerivation {
 
       # Fix paths
       substituteInPlace $out/share/applications/{${pname},${desktopName}}.desktop \
-          --replace-fail /usr/bin/${pname} $out/bin/${pname}
+          --replace-fail /usr/bin/brave-origin-${channel} $out/bin/${pname}
       substituteInPlace $out/share/gnome-control-center/default-apps/${pname}.xml \
           --replace-fail /opt/brave.com $out/opt/brave.com
       substituteInPlace $out/opt/brave.com/${packagePath}/default-app-block \
