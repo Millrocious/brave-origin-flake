@@ -1,5 +1,5 @@
 {
-  description = "Brave Origin Nightly Binary Flake";
+  description = "Brave Origin Binary Flake";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 

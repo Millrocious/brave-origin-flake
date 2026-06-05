@@ -26,16 +26,36 @@ jobs:
           chmod +x ./update.sh
           CHANNEL=release ./update.sh
 
+      - name: Update flake inputs
+        run: nix flake update
+
       - name: Commit and push changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-          git add package.nix
+          git add package.nix flake.lock
           
           if ! git diff --cached --exit-code; then
-            VERSION=$(grep -oP 'version = "\K[^"]+' package.nix || grep -oE 'version = "[^"]+"' package.nix | cut -d'"' -f2)
-            git commit -m "brave-origin: update to version ${VERSION}"
+            VERSION_CHANGED=false
+            LOCK_CHANGED=false
+            if ! git diff --cached --quiet package.nix; then
+              VERSION_CHANGED=true
+              VERSION=$(grep -oP 'version = "\K[^"]+' package.nix || grep -oE 'version = "[^"]+"' package.nix | cut -d'"' -f2)
+            fi
+            if ! git diff --cached --quiet flake.lock; then
+              LOCK_CHANGED=true
+            fi
+            
+            if [ "$VERSION_CHANGED" = true ] && [ "$LOCK_CHANGED" = true ]; then
+              MSG="chore: update brave-origin to version ${VERSION} and update flake inputs"
+            elif [ "$VERSION_CHANGED" = true ]; then
+              MSG="chore: update brave-origin to version ${VERSION}"
+            else
+              MSG="chore: update flake inputs"
+            fi
+            
+            git commit -m "$MSG"
             git push
           else
             echo "No updates found."
