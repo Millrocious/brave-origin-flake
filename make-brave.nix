@@ -85,8 +85,27 @@ let
     escapeShellArg
     ;
 
-  packagePath = "brave-origin-nightly";
-  appName = "Brave Origin Nightly";
+  channel = if lib.hasSuffix "-nightly" pname then "nightly"
+            else if lib.hasSuffix "-beta" pname then "beta"
+            else "stable";
+
+  channelSuffix = if channel == "nightly" then "_nightly"
+                  else if channel == "beta" then "_beta"
+                  else "";
+
+  channelDash = if channel == "nightly" then "-nightly"
+                else if channel == "beta" then "-beta"
+                else "";
+
+  desktopName = if channel == "nightly" then "com.brave.Origin.nightly"
+                else if channel == "beta" then "com.brave.Origin.beta"
+                else "com.brave.Origin";
+
+  packagePath = pname;
+
+  appName = if channel == "nightly" then "Brave Origin Nightly"
+            else if channel == "beta" then "Brave Origin Beta"
+            else "Brave Origin";
 
   deps = [
     alsa-lib
@@ -210,6 +229,7 @@ stdenv.mkDerivation {
           --replace-fail /bin/bash ${stdenv.shell} \
           --replace-fail 'CHROME_WRAPPER' 'WRAPPER'
 
+      ln -sf $BINARYWRAPPER $out/bin/${pname}
       ln -sf $BINARYWRAPPER $out/bin/brave-origin
 
       for exe in $out/opt/brave.com/${packagePath}/{brave,chrome_crashpad_handler}; do
@@ -219,9 +239,9 @@ stdenv.mkDerivation {
       done
 
       # Fix paths
-      substituteInPlace $out/share/applications/{brave-origin-nightly,com.brave.Origin.nightly}.desktop \
-          --replace-fail /usr/bin/brave-origin-nightly $out/bin/brave-origin
-      substituteInPlace $out/share/gnome-control-center/default-apps/brave-origin-nightly.xml \
+      substituteInPlace $out/share/applications/{${pname},${desktopName}}.desktop \
+          --replace-fail /usr/bin/${pname} $out/bin/${pname}
+      substituteInPlace $out/share/gnome-control-center/default-apps/${pname}.xml \
           --replace-fail /opt/brave.com $out/opt/brave.com
       substituteInPlace $out/opt/brave.com/${packagePath}/default-app-block \
           --replace-fail /opt/brave.com $out/opt/brave.com
@@ -231,7 +251,7 @@ stdenv.mkDerivation {
       for icon in ''${icon_sizes[*]}
       do
           mkdir -p $out/share/icons/hicolor/$icon\x$icon/apps
-          ln -s $out/opt/brave.com/${packagePath}/product_logo_''${icon}_nightly.png $out/share/icons/hicolor/$icon\x$icon/apps/brave-origin-nightly.png
+          ln -s $out/opt/brave.com/${packagePath}/product_logo_''${icon}${channelSuffix}.png $out/share/icons/hicolor/$icon\x$icon/apps/${pname}.png
       done
 
       # Replace xdg-settings and xdg-mime
@@ -284,7 +304,7 @@ stdenv.mkDerivation {
   passthru.updateScript = ./update.sh;
 
   meta = {
-    homepage = "https://brave.com/origin/download-nightly/";
+    homepage = "https://brave.com/origin/";
     description = "Privacy-oriented browser for Desktop and Laptop computers";
     changelog =
       "https://github.com/brave/brave-browser/blob/master/CHANGELOG_DESKTOP_ORIGIN.md#"
@@ -298,6 +318,6 @@ stdenv.mkDerivation {
     license = lib.licenses.mpl20;
     maintainers = with lib.maintainers; [ WitteShadovv ];
     platforms = builtins.attrNames archives;
-    mainProgram = "brave-origin";
+    mainProgram = pname;
   };
 }

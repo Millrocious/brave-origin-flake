@@ -3,15 +3,31 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
-releasesJson="$(curl --fail -s ${GITHUB_TOKEN:+-u ":$GITHUB_TOKEN"} "https://api.github.com/repos/brave/brave-browser/releases?per_page=20")"
+CHANNEL="${CHANNEL:-release}"
+
+if [[ "$CHANNEL" == "release" || "$CHANNEL" == "stable" ]]; then
+  CHANNEL="release"
+  pname="brave-origin"
+  deb_prefix="brave-origin_"
+elif [[ "$CHANNEL" == "beta" ]]; then
+  pname="brave-origin-beta"
+  deb_prefix="brave-origin-beta_"
+elif [[ "$CHANNEL" == "nightly" ]]; then
+  pname="brave-origin-nightly"
+  deb_prefix="brave-origin-nightly_"
+else
+  echo "Unsupported channel: $CHANNEL" >&2
+  exit 1
+fi
+
+releasesJson="$(curl --fail -s ${GITHUB_TOKEN:+-u ":$GITHUB_TOKEN"} "https://api.github.com/repos/brave/brave-browser/releases?per_page=50")"
 
 releaseJson="$(
-  jq -c '
+  jq -c --arg prefix "$deb_prefix" '
     map(
-      select(.prerelease)
-      | .tag_name as $tag
+      .tag_name as $tag
       | .assets as $assets
-      | select(any($assets[]?.name; . == ("brave-origin-nightly_" + ($tag | ltrimstr("v")) + "_amd64.deb")))
+      | select(any($assets[]?.name; . == ($prefix + ($tag | ltrimstr("v")) + "_amd64.deb")))
     )
     | first
   ' <<<"$releasesJson"
@@ -20,7 +36,7 @@ releaseJson="$(
 latestVersion="$(jq -r '.tag_name | ltrimstr("v")' <<<"$releaseJson")"
 
 if [[ -z "$latestVersion" || "$latestVersion" == "null" ]]; then
-  echo "Could not determine latest brave-origin version." >&2
+  echo "Could not determine latest brave-origin version for channel $CHANNEL." >&2
   exit 1
 fi
 
@@ -35,13 +51,13 @@ requireAsset() {
   fi
 }
 
-requireAsset "brave-origin-nightly_${latestVersion}_amd64.deb"
+requireAsset "${deb_prefix}${latestVersion}_amd64.deb"
 
-if hasAsset "brave-origin-nightly_${latestVersion}_arm64.deb"; then
-  hashAarch64="$(nix-hash --to-sri --type sha256 "$(nix-prefetch-url --type sha256 "https://github.com/brave/brave-browser/releases/download/v${latestVersion}/brave-origin-nightly_${latestVersion}_arm64.deb")")"
+if hasAsset "${deb_prefix}${latestVersion}_arm64.deb"; then
+  hashAarch64="$(nix-hash --to-sri --type sha256 "$(nix-prefetch-url --type sha256 "https://github.com/brave/brave-browser/releases/download/v${latestVersion}/${deb_prefix}${latestVersion}_arm64.deb")")"
 fi
 
-hashAmd64="$(nix-hash --to-sri --type sha256 "$(nix-prefetch-url --type sha256 "https://github.com/brave/brave-browser/releases/download/v${latestVersion}/brave-origin-nightly_${latestVersion}_amd64.deb")")"
+hashAmd64="$(nix-hash --to-sri --type sha256 "$(nix-prefetch-url --type sha256 "https://github.com/brave/brave-browser/releases/download/v${latestVersion}/${deb_prefix}${latestVersion}_amd64.deb")")"
 
 if hasAsset "brave-origin-v${latestVersion}-darwin-arm64.zip"; then
   hashAarch64Darwin="$(nix-hash --to-sri --type sha256 "$(nix-prefetch-url --type sha256 "https://github.com/brave/brave-browser/releases/download/v${latestVersion}/brave-origin-v${latestVersion}-darwin-arm64.zip")")"
@@ -56,16 +72,16 @@ cat >"$SCRIPT_DIR/package.nix" <<EOF
 { stdenv, callPackage, ... }@args:
 
 let
-  pname = "brave-origin";
+  pname = "${pname}";
   version = "${latestVersion}";
 
   allArchives = {
 EOF
 
-if hasAsset "brave-origin-nightly_${latestVersion}_arm64.deb"; then
+if hasAsset "${deb_prefix}${latestVersion}_arm64.deb"; then
   cat >>"$SCRIPT_DIR/package.nix" <<EOF
     aarch64-linux = {
-      url = "https://github.com/brave/brave-browser/releases/download/v\${version}/brave-origin-nightly_\${version}_arm64.deb";
+      url = "https://github.com/brave/brave-browser/releases/download/v\${version}/${deb_prefix}\${version}_arm64.deb";
       hash = "${hashAarch64}";
     };
 EOF
@@ -73,7 +89,7 @@ fi
 
 cat >>"$SCRIPT_DIR/package.nix" <<EOF
     x86_64-linux = {
-      url = "https://github.com/brave/brave-browser/releases/download/v\${version}/brave-origin-nightly_\${version}_amd64.deb";
+      url = "https://github.com/brave/brave-browser/releases/download/v\${version}/${deb_prefix}\${version}_amd64.deb";
       hash = "${hashAmd64}";
     };
 EOF
@@ -105,3 +121,4 @@ callPackage ./make-brave.nix (removeAttrs args [ "callPackage" ]) {
   archives = allArchives;
 }
 EOF
+
