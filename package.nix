@@ -14,6 +14,14 @@ let
       url = "https://github.com/brave/brave-browser/releases/download/v${version}/brave-origin_${version}_amd64.deb";
       hash = "sha256-F5d660t4t52L27gt8SF9n/54lmK+CeqZeqlbS84wjvU=";
     };
+    aarch64-darwin = {
+      url = "https://github.com/brave/brave-browser/releases/download/v${version}/brave-origin-v${version}-darwin-arm64.zip";
+      hash = "sha256-H+UHhEPMBT/wki30DBic1jSpXI8jlddYruEs9TU0Mx8=";
+    };
+    x86_64-darwin = {
+      url = "https://github.com/brave/brave-browser/releases/download/v${version}/brave-origin-v${version}-darwin-x64.zip";
+      hash = "sha256-z1U7g4VKduolOF6s9SeEcTVz7UG1i4ghONNZaN8rXFI=";
+    };
   };
 
 in
