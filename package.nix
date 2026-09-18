@@ -3,24 +3,20 @@
 
 let
   pname = "brave-origin";
-  version = "1.95.102";
+  version = "1.95.104";
 
   allArchives = {
     aarch64-linux = {
       url = "https://github.com/brave/brave-browser/releases/download/v${version}/brave-origin_${version}_arm64.deb";
-      hash = "sha256-OGnrCgA3o5mHHe9wcBbkXh7KETpJPceMgWZs++Fjmqs=";
+      hash = "sha256-Pv49QyWyQaGUSTSKPjKvV0vphCsrD64euUKoe7UDM6c=";
     };
     x86_64-linux = {
       url = "https://github.com/brave/brave-browser/releases/download/v${version}/brave-origin_${version}_amd64.deb";
-      hash = "sha256-KW2ri9iM/PcXjawXXWWs0ihARnBmkPZLCSPYGf/F8hc=";
+      hash = "sha256-/mqIszAeuKCO0GLTK94BeG0bZm5auEK1YlyFTrEfKIY=";
     };
     aarch64-darwin = {
       url = "https://github.com/brave/brave-browser/releases/download/v${version}/brave-origin-v${version}-darwin-arm64.zip";
-      hash = "sha256-uyi4P+rmXZaBLOQNbuP1S1qgGwAPu4DuMbLuRGmsc3g=";
-    };
-    x86_64-darwin = {
-      url = "https://github.com/brave/brave-browser/releases/download/v${version}/brave-origin-v${version}-darwin-x64.zip";
-      hash = "sha256-iVd2MpTaBKqkSiFIz4jfVc8CVuN9b4Lxu9OXZm7hd/g=";
+      hash = "sha256-/LWImDxb2CpiY+AdZICtg80wRuqu9R+NC8jIPCINtQo=";
     };
   };
 
