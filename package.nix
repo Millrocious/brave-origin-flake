@@ -18,6 +18,10 @@ let
       url = "https://github.com/brave/brave-browser/releases/download/v${version}/brave-origin-v${version}-darwin-arm64.zip";
       hash = "sha256-MpWdwhsVY4LBDNltfV6Dmypky0PNtxywQaWmFZQvW6s=";
     };
+    x86_64-darwin = {
+      url = "https://github.com/brave/brave-browser/releases/download/v${version}/brave-origin-v${version}-darwin-x64.zip";
+      hash = "sha256-9cllRE2XIwIve4wIpANL4GS7ALbQJLJVYD/YTWKgCe4=";
+    };
   };
 
 in
